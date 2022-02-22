@@ -1,0 +1,390 @@
+\documentclass[11pt,aspectratio=169,t]{beamer}
+\usepackage{amsmath}
+\usetheme[numbering=fraction]{metropolis}
+\usepackage[T1]{fontenc}
+\usepackage[default]{lato}
+%\usepackage{mathpazo}
+\usepackage{fourier}
+% \usepackage{lmodern}
+%\usepackage{concmath}
+\usepackage{textcomp}
+\usepackage{mathtools}
+%\usepackage{skmath}
+\usefonttheme{professionalfonts}
+\usefonttheme[onlymath]{serif}
+
+\overfullrule=2cm
+
+\setbeamertemplate{footline}{%
+  \begin{beamercolorbox}[wd=\textwidth, sep=1ex]{footline}%
+    \usebeamerfont{page number in head/foot}%
+    \usebeamertemplate*{frame footer}
+    \hfill%
+    \usebeamertemplate*{frame numbering}
+    \quad% 
+  \end{beamercolorbox}%
+}
+
+%\includeonlyframes{current}
+
+\usepackage{algorithm2e}
+\usepackage{siunitx}
+
+% Table packages.
+\usepackage{booktabs}
+
+\usepackage{xparse}
+\usepackage{makecell}
+\usepackage{tikz}
+\usepackage[beamer,customcolors]{hf-tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{fadings}
+
+
+\pdfstringdefDisableCommands{%
+  \def\\{}%
+  \def\texttt#1{<#1>}%
+}
+
+% ------------------------------------------------------------------------------
+% Define useful colors.
+\colorlet{black}{black!50!gray}
+\colorlet{green}{green!50!gray}
+\colorlet{blue}{blue!50!gray}
+
+\colorlet{CBlue}{blue!15}
+\colorlet{CBlueD}{blue!95!gray}
+\colorlet{CRed}{red!15}
+\colorlet{CRedD}{red!65!gray}
+\colorlet{CGreenD}{green!60!gray}
+\colorlet{COrange}{orange}
+
+% Background color.
+\definecolor{CBackground}{RGB}{255,253,253}
+\setbeamercolor{background canvas}{fg=black,bg=CBackground}
+% ------------------------------------------------------------------------------
+
+% ------------------------------------------------------------------------------
+% tikz settings
+\tikzset{   
+    every path/.style={thick},
+}
+% ------------------------------------------------------------------------------
+
+% \usepackage[protrusion,expansion,kerning,spacing,final]{microtype}
+% \microtypecontext{spacing=nonfrench}
+
+% ------------------------------------------------------------------------------
+% Useful mathematical macros
+\newcommand{\Data}{\vec{D}}
+\newcommand{\DataExt}{\widetilde{\vec{D}}}
+\newcommand{\MSE}{\ensuremath{\text{MSE}}}
+\newcommand{\T}{\ensuremath{\text{T}}}
+\renewcommand{\vec}[1]{\boldsymbol{#1}}
+\newcommand{\VTheta}{\ensuremath{\vec{\theta}}}
+\newcommand{\VLambda}{\ensuremath{\vec{\lambda}}}
+%\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\R}{\mathbb R}
+\newcommand{\UNN}[1][\text{NN}]{u_{#1}}
+\newcommand{\FNN}[1][\text{NN}]{f_{#1}}
+\newcommand{\NonlinOp}{\mathcal N\!}
+\newcommand{\Loss}{\mathcal L}
+\newcommand{\Model}{\mathcal G}
+\newcommand{\ModelT}{\mathrm G}  % Total model: concatenation over dataset.
+\newcommand{\given}{|}
+\newcommand{\ParamSpace}{\mathcal U}
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}
+\newcommand{\dd}{\,\textrm{d}}
+\renewcommand{\Pr}{\mathbb P}
+\renewcommand{\hat}{\widehat}
+\newcommand{\upot}{\vec u_{\text{pot}}}
+\newcommand{\usol}{\vec u_{\text{sol}}}
+\newcommand{\Grad}{\nabla}
+\newcommand{\Div}{\nabla \cdot}
+\newcommand{\Curl}{\nabla \! \times \!}
+
+\newcommand{\xx}{\vec{x}}
+
+\newcommand{\explain}[2]{\underset{\mathclap{\overset{\uparrow}{#2}}}{#1}}
+\newcommand{\explainup}[2]{\overset{\mathclap{\underset{\downarrow}{#2}}}{#1}}
+
+% Useful mathematical macros (end)
+% ------------------------------------------------------------------------------
+
+\title{Physics-informed neural networks for discrete Helmholtz--Hodge decomposition}
+\author{Dmitry I.\ Kabanov, Luis Espath, Ra\'ul Tempone}
+\institute{UQ hybrid seminar}
+\date{1 March 2022}
+\def\titlepage{%
+  \usebeamertemplate{title page}%<---
+}
+\titlegraphic{\vspace{6cm}\hspace{4.3cm}\includegraphics{rwth-logo}\phantom{text}\par}
+
+% ------------------------------------------------------------------------------
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Introduction}
+In 18?? Helmholtz postulated that a vector field $\vec u: \R^{n} \to \R^{n}$
+can be decomposed in two fields:
+$$
+\vec u = \upot + \usol = \Grad \phi + \Curl \vec\psi
+$$
+where
+\begin{itemize}
+  \item $\upot := \Grad \phi$ potential (curl-free) subfield
+       % , $\phi: \R^{n}\to\R$
+  \item $\usol := \Curl \vec\psi$ solenoidal (divergence-free) subfield
+        %, $\vec\psi: \R^{n}\to \R^{n}$
+\end{itemize}
+
+\onslide<2->{%
+Vector calculus identities clarify the names ``curl-free'' and ``divergence-free'':
+$$
+\Curl \Grad \phi = 0 \quad \text{ for any } \phi
+$$
+and
+$$
+\Div \Curl \vec \psi = 0 \quad \text{ for any } \vec \psi
+$$
+}
+\onslide<3->{%
+Nowadays it is called Helmholtz--Hodge decomposition (HHD).
+}
+
+\end{frame}
+% ------------------------------------------------------------------------------
+\begin{frame}{HHD, in general, is not unique}
+If $\vec u$ is smooth, then by taking divergence, we find that
+$$
+\Delta \phi = \Div \vec u
+$$
+and
+$$
+\usol = \vec u - \Grad \phi.
+$$
+
+However, the decomposition is not unique. For any harmonic function $\xi$,
+$$
+\vec u = \Grad (\phi + \xi) + \left( \Curl \vec \psi - \Grad \xi \right)
+$$
+is also a decomposition.
+
+If domain $D=\R^{n}$ and $\vec u$ vanishes as $|\vec x| \to \infty$, then
+$\xi \equiv 0$, and the decomposition is unique.
+
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Orthogonal HHD}
+Another way to achieve uniqueness is to impose additional constraints.
+
+For example orthogonality of the subfields in $L^{2}$-sense
+\[
+\int_{D} \upot \usol \, \dd \vec x = 0
+\]
+Orthogonality can be achieved by imposing boundary conditions on the flow.
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Orthogonality of subfields}
+
+\emph{Theorem. Orthogonality of subfields [ChorinMardsen2000]}.
+A~vector field $\vec u$ on $D$ can be decomposed
+in the form
+\[
+\vec u = \upot + \usol = \Grad \phi + \usol
+\]
+with $\Div \usol = 0$.
+If $\usol \cdot \vec n = 0$ on $\partial D$, then
+$
+\int_{D} \upot \usol \, \dd \vec x = 0
+$
+
+\onslide<2->{%
+\emph{Proof}.
+\begin{align*}
+  \Div \left(\phi \usol \right)
+  &= \phi \Div \usol + \usol \cdot \Grad \phi && \text{divergence of product} \\
+  &= \usol \cdot \Grad \phi && \Div \usol = 0
+\end{align*}
+}
+\onslide<3->{%
+\begin{align*}
+  \int_{D} \usol \cdot \Grad \phi \, \dd \vec x
+  &= \int_{D} \Div \left(\phi \usol\right) \, \dd \vec x && \text{by the above} \\
+  &= \oint_{\partial D} \phi \usol \cdot \vec n \, \dd S && \text{Gauss--Ostrogradsky thm}\\
+  &= 0 && \usol \cdot \vec n = 0 \text{ on } \partial D
+\end{align*}
+}
+
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Uniqueness of orthogonal HHD}
+\emph{Theorem. Uniqueness of orthogonal HHD [ChorinMardsen2000]}.
+A~vector field $\vec u$ on $D$ can be decomposed
+in the form
+\[
+\vec u = \upot + \usol = \Grad \phi + \usol
+\]
+with $\Div \usol = 0$.
+If $\usol \cdot \vec n = 0$ on $\partial D$, then the decomposition is unique.
+
+Proof.
+Let
+$$
+\vec u = \upot + \usol = \Grad \phi + \usol =
+    \Grad \phi' + \usol' = \upot' + \usol'
+$$
+Both decompositions must be orthogonal
+$$
+\int_D \Grad \phi \cdot \usol \, \dd \xx = 0 \text{ and }
+\int_D \Grad \phi' \cdot \usol' \, \dd \xx = 0.
+$$
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}{Uniqueness of orthogonal HHD}
+\emph{Proof (continuation).}
+Having
+$
+\vec u = \Grad \phi + \usol =
+    \Grad \phi' + \usol'
+$
+implies
+$$
+0 = \Grad \left(\phi - \phi'\right) + \usol - \usol'
+$$
+and by taking the inner product with $\usol - \usol'$ over $D$, we get
+\begin{align*}
+0 &= - \int_D \Grad \phi \cdot \usol' + \Grad \phi' \cdot \usol +
+    \norm{\usol - \usol'}{}^2 \,\dd \xx \\
+  &= - \int_D \Div \left(\phi \usol'\right) + \Div \left(\phi' \usol\right) +
+    \norm{\usol - \usol'}{}^2 \,\dd \xx && \Div \usol = \Div \usol' = 0\\
+  &= - \oint_{\partial D} \phi \usol' \cdot \vec n
+     + \phi' \usol \cdot \vec n \,\dd s
+     + \int_D \norm{\usol - \usol'}{}^2 \,\dd \xx && \text{Gauss--Ostrogradsky thm}\\
+  &= \phantom{-}\int_D \norm{\usol - \usol'}{}^2 \,\dd \xx,
+\end{align*}
+which implies that $\usol = \usol'$, and hence, $\Grad \phi = \Grad \phi'$.
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Feed-forward neural networks}
+
+Let \(\mathcal X=\R^n\) and \(\mathcal Y=\R^m\).
+
+Then feed-forward neural network with \(L\) layers is a mapping from
+\(\mathcal X\) to \(\mathcal Y\)
+of the following compositional structure:
+\[
+    \Model(x; u) = S \circ A \circ F_{L-1} \circ \dots \circ F_1(x)
+\]
+where
+\begin{itemize}
+    \item \(S: \R^m \to V \subseteq \R^m \), where usually \(V=\R^m\) for
+    regression and \(V=\Pr^m\) for classification
+    \item \(A\) is an affine map, which is also called \textbf{output layer}
+    \item \(F_j : \R^{n_{j-1}} \to \R^{n_j} \) nonlinear continuous
+    functions, with \(n_0 = n\), which are called \textbf{hidden layers}
+\end{itemize}
+\onslide<2->{
+This neural networks are also called networks with \(L-1\) hidden layers.
+} 
+\end{frame}
+
+\begin{frame}
+\frametitle{Fully-connected NNs are subtype of feed-forward NNs}
+
+If for feed-forward neural network
+\[
+    \Model(x; u) = S \circ A \circ F_{L-1} \circ \dots \circ F_1(x)
+\]
+we specialize hidden layers to pair "nonlinearity + affine map":
+\[
+    F_j(x_{j-1}) = \sigma(W_j \, z_{j-1} + b_j)
+\]
+where
+\begin{itemize}
+    \item \(W_j \in \R^{n_{j-1}} \times \R^{n_j}\) are \textbf{weights} matrices
+    \item \(b_j \in \R^{n_j}\) are \textbf{bias} vectors
+    \item nonlinear function \(\sigma\) is applied componentwise
+\end{itemize}
+then we obtain \textbf{fully-connected} or \textbf{dense} neural network, which
+is also called \textbf{multi-layer perceptron}.
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Visualization of multilayer perceptron $\R^4 \to \R$ with one hidden layer}
+
+\begin{figure}[t]
+    \centering
+    \def\layersep{2.5cm}
+
+    \begin{tikzpicture}[shorten >=1pt,->,draw=black!50, node distance=\layersep]
+        \tikzstyle{every pin edge}=[<-,shorten <=1pt]
+        \tikzstyle{neuron}=[circle,fill=black!25,minimum size=17pt,inner sep=0pt]
+        \tikzstyle{input neuron}=[neuron, fill=CGreenD];
+        \tikzstyle{output neuron}=[neuron, fill=CRedD];
+        \tikzstyle{hidden neuron}=[neuron, fill=CBlueD];
+        \tikzstyle{annot} = [text width=4em, text centered]
+    
+        % Draw the input layer nodes
+        \foreach \name / \y in {1,...,4}
+        % This is the same as writing \foreach \name / \y in {1/1,2/2,3/3,4/4}
+            \node[input neuron, pin=left:Input \#\y] (I-\name) at (0,-\y) {};
+    
+        % Draw the hidden layer nodes
+        \foreach \name / \y in {1,...,5}
+            \path[yshift=0.5cm]
+                node[hidden neuron] (H-\name) at (\layersep,-\y cm) {};
+    
+        % Draw the output layer node
+        \node[output neuron,pin={[pin edge={->}]right:Output}, right of=H-3] (O) {};
+    
+        % Connect every node in the input layer with every node in the
+        % hidden layer.
+        \foreach \source in {1,...,4}
+            \foreach \dest in {1,...,5}
+                \path (I-\source) edge (H-\dest);
+    
+        % Connect every node in the hidden layer with the output layer
+        \foreach \source in {1,...,5}
+            \path (H-\source) edge (O);
+    
+        % Annotate the layers
+        \node[annot,above of=H-1, node distance=1cm] (hl) {Hidden layer};
+        \node[annot,left of=hl] {Input layer};
+        \node[annot,right of=hl] {Output layer};
+    \end{tikzpicture}
+    %\caption[Network graph for a $(L+1)$-layer perceptron.]{Network graph of a $(L+1)$-layer perceptron with $D$ input units and $C$ output units. The $l^{\text{th}}$ hidden layer contains $m^{(l)}$ hidden units.}
+    \label{fig:multilayer-perceptron}
+\end{figure}
+
+\begin{minipage}{\linewidth}
+\centering
+\tiny[\url{https://texample.net/tikz/examples/neural-network/}, with modifications]
+\end{minipage}
+\end{frame}
+% ------------------------------------------------------------------------------
+
+\section{Training process and algorithms}
+
+
+\begin{frame}[standout]
+\centering
+\Huge
+Thank you!
+\end{frame}
+
+\end{document}
