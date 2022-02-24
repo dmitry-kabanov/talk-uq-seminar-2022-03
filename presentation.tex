@@ -276,6 +276,52 @@ and by taking the inner product with $\usol - \usol'$ over $D$, we get
 which implies that $\usol = \usol'$, and hence, $\Grad \phi = \Grad \phi'$.
 \end{frame}
 
+% ------------------------------------------------------------------------------
+\begin{frame}{Discrete Helmholtz--Hodge decomposition}
+
+\begin{minipage}{0.98\textwidth}
+Consider a problem in which vector field $\vec u$ is not given analytically
+but only as a finite dataset $\mathrm D = (\xx_{i}, \vec u_{i})$ for $i=1,\dots, N$ inside
+a~given compact domain $D$.
+
+In this case, we want to learn the appropriate decomposition via empirical
+risk minimization with additional regularizing terms
+\[
+\phi^{*}, \psi^{*} =
+\arg \min_{\phi, \psi} \mathcal L(\phi, \vec \psi, \mathrm D)
+  + \lambda R_{\perp}(\phi, \vec \psi) + \mu R_{H^{3}}(\phi, \vec \psi)
+\]
+where
+\[
+\mathcal L(\phi, \vec \psi, \mathrm{D}) =
+\frac1N \sum_{i=1}^{N} \norm{\Grad \phi(\xx) + \Curl{\vec \psi(\xx)} - \vec u}^{2}_{2}
+\]
+\end{minipage}
+\hfill
+\begin{minipage}{0.02\textwidth}
+  \centering
+  \rule{\textwidth}{\textwidth}
+\end{minipage}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Discrete Helmholtz--Hodge decomposition with regularizers}
+Using the above results on the uniqueness of the orthogonal HHD, we solve
+in~practice the following inverse problem with additional regularizers
+\[
+\phi^{*}, \psi^{*} =
+\arg \min_{\phi, \psi} \mathcal L(\phi, \vec \psi, \mathrm D)
+  + \lambda R_{\perp}(\phi, \vec \psi) + \mu R_{H^{3}}(\phi, \vec \psi)
+\]
+where
+% \[
+% R_{\perp}\(\phi, \vec \psi) = < \Grad \phi \Curl \vec \psi >_{L^2(D)}
+% \]
+
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\section{Neural networks}
 
 % ------------------------------------------------------------------------------
 \begin{frame}
