@@ -277,6 +277,9 @@ which implies that $\usol = \usol'$, and hence, $\Grad \phi = \Grad \phi'$.
 \end{frame}
 
 % ------------------------------------------------------------------------------
+\section{Discrete Helmholtz--Hodge decomposition}
+
+% ------------------------------------------------------------------------------
 \begin{frame}{Discrete Helmholtz--Hodge decomposition}
 
 \begin{minipage}{0.98\textwidth}
@@ -311,53 +314,76 @@ in~practice the following inverse problem with additional regularizers
 \[
 \phi^{*}, \psi^{*} =
 \arg \min_{\phi, \psi} \mathcal L(\phi, \vec \psi, \mathrm D)
-  + \lambda R_{\perp}(\phi, \vec \psi) + \mu R_{H^{3}}(\phi, \vec \psi)
+  + \lambda R_{\perp}(\phi, \vec \psi) + \mu R_{\text S}(\phi, \vec \psi)
 \]
 where
-% \[
-% R_{\perp}\(\phi, \vec \psi) = < \Grad \phi \Curl \vec \psi >_{L^2(D)}
-% \]
+\begin{align*}
+&\text{orthogonality regularizer }
+&R_{\perp}(\phi, \vec \psi) &=
+    \int_{D} \left(\Grad \phi \cdot \Curl \vec \psi \right)^{2} \, \dd \xx \\
+&\text{smoothness regularizer }
+&R_{\text S}(\phi, \vec \psi) &=
+    \int_{D} \norm{\partial^{3}\phi(\xx)}^{2} + \norm{\partial^{3}\vec \psi(\xx)}^{2} \, \dd \xx
+\end{align*}
+
+Regularizers are discretized on uniform grid $32\times32$.
+
+Hyperparameters $\lambda$ and $\mu$ should be set before the training.
+We use $\mu=1e-2$ in all experiments but we vary $\lambda$ to study its effect
+on the reconstruction performance.
 
 \end{frame}
 
-% ------------------------------------------------------------------------------
-\section{Neural networks}
+\begin{frame}{Specialization to 2D}
+We consider only two-dimensional case $D \subset \R^{2}$.
+
+Then the vector potential $\vec \psi$ is a vector that is orthogonal to $D$:
+\[
+ \vec \psi = (0, 0, \psi)
+\]
+and the curl operator becomes
+\[
+\Curl \vec \psi = \partial_{2} \psi \vec e_{1} - \partial_{1} \psi \vec e_{2}
+\]
+where $(\vec e_{1}, \vec e_{2})$ is the canonical basis in $\R^{2}$.
+
+Function $\psi$ is known as \emph{stream function} in fluid mechanics.
+
+Note that 2D decomposition is now defined by two scalar-valued functions $\phi$
+and $\psi$.
+\end{frame}
+
 
 % ------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Feed-forward neural networks}
 
-Let \(\mathcal X=\R^n\) and \(\mathcal Y=\R^m\).
+As estimating functions $\phi$ and $\psi$ we use two
+fully-connected neural networks (multilayer perceptrons).
 
-Then feed-forward neural network with \(L\) layers is a mapping from
-\(\mathcal X\) to \(\mathcal Y\)
+NN with \(L\) hidden layers is a mapping from
+\(\R^{2}\) to \(\R\)
 of the following compositional structure:
 \[
-    \Model(x; u) = S \circ A \circ F_{L-1} \circ \dots \circ F_1(x)
+    \phi(\xx; \VTheta) = A \circ F_{L} \circ \dots \circ F_1(\xx)
 \]
 where
 \begin{itemize}
-    \item \(S: \R^m \to V \subseteq \R^m \), where usually \(V=\R^m\) for
-    regression and \(V=\Pr^m\) for classification
-    \item \(A\) is an affine map, which is also called \textbf{output layer}
+    \item \(A\) is linear operator, which is also called \textbf{output layer}
     \item \(F_j : \R^{n_{j-1}} \to \R^{n_j} \) nonlinear continuous
-    functions, with \(n_0 = n\), which are called \textbf{hidden layers}
+    functions, with \(n_0 = 2\), which are called \textbf{hidden layers}
 \end{itemize}
-\onslide<2->{
-This neural networks are also called networks with \(L-1\) hidden layers.
-} 
 \end{frame}
 
-\begin{frame}
-\frametitle{Fully-connected NNs are subtype of feed-forward NNs}
+\begin{frame}{Neural networks - hidden layers}
 
-If for feed-forward neural network
+We specialize hidden layers $F_{j}$ of a neural network
 \[
-    \Model(x; u) = S \circ A \circ F_{L-1} \circ \dots \circ F_1(x)
+    \phi(\xx; \VTheta) = A \circ F_{L} \circ \dots \circ F_1(\xx)
 \]
-we specialize hidden layers to pair "nonlinearity + affine map":
+to pairs "nonlinearity + affine map":
 \[
-    F_j(x_{j-1}) = \sigma(W_j \, z_{j-1} + b_j)
+    F_j(z_{j}) = \sigma(W_j \, z_{j-1} + b_j)
 \]
 where
 \begin{itemize}
@@ -365,13 +391,14 @@ where
     \item \(b_j \in \R^{n_j}\) are \textbf{bias} vectors
     \item nonlinear function \(\sigma\) is applied componentwise
 \end{itemize}
-then we obtain \textbf{fully-connected} or \textbf{dense} neural network, which
-is also called \textbf{multi-layer perceptron}.
+
+Parameter vector $\VTheta$ is a concatenation of $A$, $W_{j}$ and $b_{j}$ for
+$j = 1, \dots, L$.
 
 \end{frame}
 
 \begin{frame}
-\frametitle{Visualization of multilayer perceptron $\R^4 \to \R$ with one hidden layer}
+\frametitle{Visualization of multilayer perceptron $\R^2 \to \R$ with one hidden layer}
 
 \begin{figure}[t]
     \centering
@@ -386,9 +413,9 @@ is also called \textbf{multi-layer perceptron}.
         \tikzstyle{annot} = [text width=4em, text centered]
     
         % Draw the input layer nodes
-        \foreach \name / \y in {1,...,4}
+        \foreach \name / \y in {1,...,2}
         % This is the same as writing \foreach \name / \y in {1/1,2/2,3/3,4/4}
-            \node[input neuron, pin=left:Input \#\y] (I-\name) at (0,-\y) {};
+            \node[input neuron, pin=left:Input \#\y] (I-\name) at (0,-1-\y) {};
     
         % Draw the hidden layer nodes
         \foreach \name / \y in {1,...,5}
@@ -400,7 +427,7 @@ is also called \textbf{multi-layer perceptron}.
     
         % Connect every node in the input layer with every node in the
         % hidden layer.
-        \foreach \source in {1,...,4}
+        \foreach \source in {1,...,2}
             \foreach \dest in {1,...,5}
                 \path (I-\source) edge (H-\dest);
     
@@ -413,8 +440,6 @@ is also called \textbf{multi-layer perceptron}.
         \node[annot,left of=hl] {Input layer};
         \node[annot,right of=hl] {Output layer};
     \end{tikzpicture}
-    %\caption[Network graph for a $(L+1)$-layer perceptron.]{Network graph of a $(L+1)$-layer perceptron with $D$ input units and $C$ output units. The $l^{\text{th}}$ hidden layer contains $m^{(l)}$ hidden units.}
-    \label{fig:multilayer-perceptron}
 \end{figure}
 
 \begin{minipage}{\linewidth}
@@ -424,9 +449,26 @@ is also called \textbf{multi-layer perceptron}.
 \end{frame}
 % ------------------------------------------------------------------------------
 
-\section{Training process and algorithms}
+% ------------------------------------------------------------------------------
+\begin{frame}{Training process and algorithms}
 
+With the above choices for parameterized estimator $\phi(\xx; \VTheta_{\phi})$
+and $\psi(\xx; \VTheta_{\psi})$, training process is
+\[
+\VTheta_{\phi}^{*}, \VTheta_{\psi}^{*} =
+\arg \min_{\VTheta_\phi, \VTheta_\psi} \mathcal L(\phi, \vec \psi, \mathrm D)
+  + \lambda R_{\perp}(\phi, \vec \psi) + \mu R_{\text S}(\phi, \vec \psi)
+\]
 
+\begin{itemize}
+    \item We use ADAM optimizer with default parameters
+    \item We set initial learning rate to 0.1 to help generalization
+    \item We note that decrease learning rate after some number of iterations
+        helps with stability and generalization
+\end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------------------------
 \begin{frame}[standout]
 \centering
 \Huge
