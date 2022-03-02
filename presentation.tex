@@ -27,6 +27,8 @@
 
 %\includeonlyframes{current}
 
+\graphicspath{{assets/}}
+
 \usepackage{algorithm2e}
 \usepackage{siunitx}
 
@@ -113,13 +115,14 @@
 % ------------------------------------------------------------------------------
 
 \title{Physics-informed neural networks for discrete Helmholtz--Hodge decomposition}
-\author{Dmitry I.\ Kabanov, Luis Espath, Ra\'ul Tempone}
-\institute{UQ hybrid seminar}
-\date{1 March 2022}
+\author{Dmitry I.\ Kabanov (RWTH)\\
+  Joint work with Luis Espath (U Nottingham), Ra\'ul Tempone (RWTH, KAUST)}
+\institute{}
+\date{UQ hybrid seminar, 1 March 2022}
 \def\titlepage{%
   \usebeamertemplate{title page}%<---
 }
-\titlegraphic{\vspace{6cm}\hspace{4.3cm}\includegraphics{rwth-logo}\phantom{text}\par}
+\titlegraphic{\vspace{5.2cm}\hspace{6.3cm}\includegraphics{rwth-logo}\phantom{text}\par}
 
 % ------------------------------------------------------------------------------
 
@@ -131,8 +134,8 @@
 
 % ------------------------------------------------------------------------------
 \begin{frame}{Introduction}
-In 18?? Helmholtz postulated that a vector field $\vec u: \R^{n} \to \R^{n}$
-can be decomposed in two fields:
+In 1858 Helmholtz postulated that a vector field $\vec u: \R^{n} \to \R^{n}$
+can be decomposed in two subfields:
 $$
 \vec u = \upot + \usol = \Grad \phi + \Curl \vec\psi
 $$
@@ -170,7 +173,8 @@ $$
 \usol = \vec u - \Grad \phi.
 $$
 
-However, the decomposition is not unique. For any harmonic function $\xi$,
+However, the decomposition is not unique. For any harmonic function $\xi$
+(i.e. $\Delta \xi = 0$),
 $$
 \vec u = \Grad (\phi + \xi) + \left( \Curl \vec \psi - \Grad \xi \right)
 $$
@@ -195,7 +199,7 @@ Orthogonality can be achieved by imposing boundary conditions on the flow.
 % ------------------------------------------------------------------------------
 \begin{frame}{Orthogonality of subfields}
 
-\emph{Theorem. Orthogonality of subfields [ChorinMardsen2000]}.
+\emph{Theorem [ChorinMardsen2000]}.
 A~vector field $\vec u$ on $D$ can be decomposed
 in the form
 \[
@@ -204,7 +208,7 @@ in the form
 with $\Div \usol = 0$.
 If $\usol \cdot \vec n = 0$ on $\partial D$, then
 $
-\int_{D} \upot \usol \, \dd \vec x = 0
+\int_{D} \upot \usol \, \dd \vec x = 0.
 $
 
 \onslide<2->{%
@@ -282,17 +286,16 @@ which implies that $\usol = \usol'$, and hence, $\Grad \phi = \Grad \phi'$.
 % ------------------------------------------------------------------------------
 \begin{frame}{Discrete Helmholtz--Hodge decomposition}
 
-\begin{minipage}{0.98\textwidth}
+\begin{minipage}{0.78\textwidth}
 Consider a problem in which vector field $\vec u$ is not given analytically
 but only as a finite dataset $\mathrm D = (\xx_{i}, \vec u_{i})$ for $i=1,\dots, N$ inside
 a~given compact domain $D$.
 
-In this case, we want to learn the appropriate decomposition via empirical
+In this case, we aim to learn the appropriate decomposition via empirical
 risk minimization with additional regularizing terms
 \[
 \phi^{*}, \psi^{*} =
 \arg \min_{\phi, \psi} \mathcal L(\phi, \vec \psi, \mathrm D)
-  + \lambda R_{\perp}(\phi, \vec \psi) + \mu R_{H^{3}}(\phi, \vec \psi)
 \]
 where
 \[
@@ -301,9 +304,9 @@ where
 \]
 \end{minipage}
 \hfill
-\begin{minipage}{0.02\textwidth}
+\begin{minipage}{0.20\textwidth}
   \centering
-  \rule{\textwidth}{\textwidth}
+  \includegraphics[scale=0.7]{measurements}
 \end{minipage}
 \end{frame}
 
@@ -452,8 +455,9 @@ $j = 1, \dots, L$.
 % ------------------------------------------------------------------------------
 \begin{frame}{Training process and algorithms}
 
-With the above choices for parameterized estimator $\phi(\xx; \VTheta_{\phi})$
-and $\psi(\xx; \VTheta_{\psi})$, training process is
+With the above choices for parameterized estimators $\phi(\cdot; \VTheta_{\phi})$
+and $\psi(\cdot; \VTheta_{\psi})$, training process amounts to solving the following
+optimization problem:
 \[
 \VTheta_{\phi}^{*}, \VTheta_{\psi}^{*} =
 \arg \min_{\VTheta_\phi, \VTheta_\psi} \mathcal L(\phi, \vec \psi, \mathrm D)
@@ -462,9 +466,248 @@ and $\psi(\xx; \VTheta_{\psi})$, training process is
 
 \begin{itemize}
     \item We use ADAM optimizer with default parameters
+    \item We initialize parameters using Xavier Glorot initialization
     \item We set initial learning rate to 0.1 to help generalization
-    \item We note that decrease learning rate after some number of iterations
-        helps with stability and generalization
+    \item We note that decreasing the learning rate after some number
+        of iterations helps with training stability and generalization
+\end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Generalization error}
+
+We score quality of reconstruction using relative Root Mean Squared Error rRMSE
+\[
+\text{rRMSE} = \sqrt{%
+    \frac{%
+    \sum_{i=1}^N \norm{\vec u_i - \hat{\vec u}_i}_2^2}{%
+    \sum_{i=1}^N \norm{\vec u_i}2^2
+    }
+}
+\]
+where
+\begin{itemize}
+    \item $\vec u_{i}$ is the $i$th measurement from the test dataset
+    \item $\hat{\vec u}_{i}$ the corresponding prediction
+\end{itemize}
+
+Measurements are either from total vector field
+or from potential or solenoidal subfields.
+\end{frame}
+
+\section{Example 1: Orthogonal decomposition of~a~field with~vanishing normal solenoidal subfield on~the~boundary}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Ex 1: Data}
+We consider a vector field given by the following potential
+functions:
+\begin{align}
+\phi &= \exp\left( - \frac{\norm{\vec x - \vec x_0}{}^2}{2} \right)
+    - \exp\left( - \frac{\norm{\vec x - \vec x_1}{}^2}{2} \right) \\
+\psi &= \exp\left( - \frac{\norm{\vec x - \vec x_2}{}^2}{2} \right),
+\end{align}
+where $\vec x_0 = (3, -3)$, $\vec x_1 = (-3, -3)$, $\vec x_2 = (0, 3)$.
+All points $\vec x$ belong to domain $[-6, 6]^2$.
+The vector fields are given by $\Grad \phi$ and $\Curl \psi$, respectively.
+
+Training data are given by uniform grid $51 \times 51$, validation data
+by grid $16 \times 16$, test data by grid $101 \times 101$.
+\end{frame}
+
+\begin{frame}{Example 1}
+We use a neural network with one hidden layer with 64 hidden neurons.
+We train it using \num{100000} epochs.
+
+We analyze the reconstruction performance different values of the multiplier
+of the orthogonalization regularizer
+$\lambda \in \{  10^{-8}, 10^{-3}, 10^{-2}, 10^{-1}, 1, 10 \}$.
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Example 1}
+\centering
+Reconstruction relative mean squared errors $\times 100\%$ versus multiplier of the
+orthogonalization regularizer $\lambda$.
+Errors $e_{\text{tot}}$, $e_{\text{pot}}$, $e_{\text{sol}}$ are for total field
+and potential and solenoidal subfields, respectively.
+
+\centering
+\input{assets/ribeiro/ribeiro-errors.tex}
+\end{frame}
+
+\begin{frame}{Ex 1: reconstruction of total field}
+\centering
+\vspace{0.5cm}
+\includegraphics[scale=0.45]{ribeiro/recon-total-first-best}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+\node (txt) at (0, 0) {True};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 0$};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 100$};
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Ex 1: reconstruction of potential subfield}
+\centering
+\vspace{0.5cm}
+\includegraphics[scale=0.45]{ribeiro/recon-pot-first-best}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+\node (txt) at (0, 0) {True};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 0$};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 100$};
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Ex 1: reconstruction of solenoidal subfield}
+\centering
+\vspace{0.5cm}
+\includegraphics[scale=0.45]{ribeiro/recon-sol-first-best}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+\node (txt) at (0, 0) {True};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 0$};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 100$};
+\end{tikzpicture}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\section{Example 2: Orthogonal decomposition without vanishing normal
+solenoidal subfield on~the~boundary}
+
+\begin{frame}{Ex 2: Data}
+Potential (curl-free) part given by the subfield:
+\[
+    \upot = \frac12 \left(
+        \begin{array}{r}
+        -2 \sin 2x \, \cos 3y \\
+        -3 \cos 2x \, \sin 3y
+    \end{array}
+    \right)
+\]
+The solenoidal (divergence-free) part is given by the Taylor--Green vortex at
+time zero:
+\[
+    \usol = \left(
+    \begin{array}{c}
+        \phantom{-} \cos x \, \sin y \\
+        -\sin x \, \cos y
+    \end{array}
+    \right)
+\]
+
+Measurements are sampled randomly with random seed 10. Number of measurements
+is 200. The domain is $[0; 2 \pi]^2$.
+\end{frame}
+
+\begin{frame}{Ex 2: Orthogonality}
+By analytical computation, one can see that the subfields are orthogonal
+in $L^{2}$-sense:
+\[
+    \int_D \upot \cdot \usol \, d\vec x = 0.
+\]
+
+\vspace{1cm}
+However, the normal component of the solenoidal part of the field does not
+vanish on the boundary.
+For example,
+\[
+  \usol \cdot \vec n = \sin x \text{ on } [0, 2\pi] \times \{y=0\}
+\]
+\end{frame}
+
+\begin{frame}{Ex 2: Reconstruction errors}
+Reconstruction relative mean squared errors $\times 100\%$ versus multiplier of the
+orthogonalization regularizer $\lambda$.
+Errors $e_{\text{tot}}$, $e_{\text{pot}}$, $e_{\text{sol}}$ are for total field
+and potential and solenoidal subfields, respectively.
+
+\centering
+\input{assets/periodic/periodic-errors.tex}
+\end{frame}
+
+
+\begin{frame}{Ex 2: reconstruction of total field}
+\centering
+\vspace{0.5cm}
+\includegraphics[scale=0.45]{periodic/recon-total-first-best}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+\node (txt) at (0, 0) {True};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 0$};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 0.1$};
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Ex 2: reconstruction of potential subfield}
+\centering
+\vspace{0.5cm}
+\includegraphics[scale=0.45]{periodic/recon-pot-first-best}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+\node (txt) at (0, 0) {True};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 0$};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 0.1$};
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Ex 2: reconstruction of solenoidal subfield}
+\centering
+\vspace{0.5cm}
+\includegraphics[scale=0.45]{periodic/recon-sol-first-best}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+\node (txt) at (0, 0) {True};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 0$};
+\end{tikzpicture}
+\begin{tikzpicture}[remember picture, overlay]
+\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+\node (txt) at (0, 0) {$\lambda = 0.1$};
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Conclusions}
+\begin{itemize}
+    \item Physics-informed neural networks can be used to learn Helmholtz--Hodge
+        decomposition of a vector field from finite set of measurements
+    \item For fields with vanishing normal component of the solenoidal subfield,
+        additional information on orthogonality of the fields improves
+        reconstruction errors two order of magnitudes
+    \item For fields with orthogonal components but without uniqueness,
+        errors decreases one order of magnitude (however, errors is 50\%)
 \end{itemize}
 \end{frame}
 
