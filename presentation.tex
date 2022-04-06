@@ -118,7 +118,7 @@
 \author{Dmitry I.\ Kabanov (RWTH)\\
   Joint work with Luis Espath (U Nottingham), Ra\'ul Tempone (RWTH, KAUST)}
 \institute{}
-\date{UQ hybrid seminar, 1 March 2022}
+\date{Ulm University, 7 April 2022}
 \def\titlepage{%
   \usebeamertemplate{title page}%<---
 }
@@ -197,7 +197,7 @@ Orthogonality can be achieved by imposing boundary conditions on the flow.
 \end{frame}
 
 % ------------------------------------------------------------------------------
-\begin{frame}{Orthogonality of subfields}
+\begin{frame}{Orthogonality of subfields, uniqueness}
 
 \emph{Theorem [ChorinMardsen2000]}.
 A~vector field $\vec u$ on $D$ can be decomposed
@@ -205,80 +205,19 @@ in the form
 \[
 \vec u = \upot + \usol = \Grad \phi + \usol
 \]
-with $\Div \usol = 0$.
-If $\usol \cdot \vec n = 0$ on $\partial D$, then
-$
-\int_{D} \upot \usol \, \dd \vec x = 0.
-$
+with $$\Div \usol = 0.$$
 
-\onslide<2->{%
-\emph{Proof}.
-\begin{align*}
-  \Div \left(\phi \usol \right)
-  &= \phi \Div \usol + \usol \cdot \Grad \phi && \text{divergence of product} \\
-  &= \usol \cdot \Grad \phi && \Div \usol = 0
-\end{align*}
-}
-\onslide<3->{%
-\begin{align*}
-  \int_{D} \usol \cdot \Grad \phi \, \dd \vec x
-  &= \int_{D} \Div \left(\phi \usol\right) \, \dd \vec x && \text{by the above} \\
-  &= \oint_{\partial D} \phi \usol \cdot \vec n \, \dd S && \text{Gauss--Ostrogradsky thm}\\
-  &= 0 && \usol \cdot \vec n = 0 \text{ on } \partial D
-\end{align*}
-}
+If vanishing boundary condition for solenoidal subfield is specified
+$$\usol \cdot \vec n = 0 \text{ on } \partial D,$$
+then
+$$
+\int_{D} \upot \usol \, \dd \vec x = 0,
+$$
+that is, subfields are \textbf{orthogonal}.
+Moreover, the decomposition is \textbf{unique}.
 
 \end{frame}
 
-% ------------------------------------------------------------------------------
-\begin{frame}{Uniqueness of orthogonal HHD}
-\emph{Theorem. Uniqueness of orthogonal HHD [ChorinMardsen2000]}.
-A~vector field $\vec u$ on $D$ can be decomposed
-in the form
-\[
-\vec u = \upot + \usol = \Grad \phi + \usol
-\]
-with $\Div \usol = 0$.
-If $\usol \cdot \vec n = 0$ on $\partial D$, then the decomposition is unique.
-
-Proof.
-Let
-$$
-\vec u = \upot + \usol = \Grad \phi + \usol =
-    \Grad \phi' + \usol' = \upot' + \usol'
-$$
-Both decompositions must be orthogonal
-$$
-\int_D \Grad \phi \cdot \usol \, \dd \xx = 0 \text{ and }
-\int_D \Grad \phi' \cdot \usol' \, \dd \xx = 0.
-$$
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}{Uniqueness of orthogonal HHD}
-\emph{Proof (continuation).}
-Having
-$
-\vec u = \Grad \phi + \usol =
-    \Grad \phi' + \usol'
-$
-implies
-$$
-0 = \Grad \left(\phi - \phi'\right) + \usol - \usol'
-$$
-and by taking the inner product with $\usol - \usol'$ over $D$, we get
-\begin{align*}
-0 &= - \int_D \Grad \phi \cdot \usol' + \Grad \phi' \cdot \usol +
-    \norm{\usol - \usol'}{}^2 \,\dd \xx \\
-  &= - \int_D \Div \left(\phi \usol'\right) + \Div \left(\phi' \usol\right) +
-    \norm{\usol - \usol'}{}^2 \,\dd \xx && \Div \usol = \Div \usol' = 0\\
-  &= - \oint_{\partial D} \phi \usol' \cdot \vec n
-     + \phi' \usol \cdot \vec n \,\dd s
-     + \int_D \norm{\usol - \usol'}{}^2 \,\dd \xx && \text{Gauss--Ostrogradsky thm}\\
-  &= \phantom{-}\int_D \norm{\usol - \usol'}{}^2 \,\dd \xx,
-\end{align*}
-which implies that $\usol = \usol'$, and hence, $\Grad \phi = \Grad \phi'$.
-\end{frame}
 
 % ------------------------------------------------------------------------------
 \section{Discrete Helmholtz--Hodge decomposition}
@@ -495,10 +434,10 @@ Measurements are either from total vector field
 or from potential or solenoidal subfields.
 \end{frame}
 
-\section{Example 1: Orthogonal decomposition of~a~field with~vanishing normal solenoidal subfield on~the~boundary}
+\section{Example: Orthogonal decomposition of~a~field with~vanishing normal solenoidal subfield on~the~boundary}
 
 % ------------------------------------------------------------------------------
-\begin{frame}{Ex 1: Data}
+\begin{frame}{Data}
 We consider a vector field given by the following potential
 functions:
 \begin{align}
@@ -514,7 +453,7 @@ Training data are given by uniform grid $51 \times 51$, validation data
 by grid $16 \times 16$, test data by grid $101 \times 101$.
 \end{frame}
 
-\begin{frame}{Example 1}
+\begin{frame}{Example}
 We use a neural network with one hidden layer with 64 hidden neurons.
 We train it using \num{100000} epochs.
 
@@ -524,7 +463,7 @@ $\lambda \in \{  10^{-8}, 10^{-3}, 10^{-2}, 10^{-1}, 1, 10 \}$.
 \end{frame}
 
 % ------------------------------------------------------------------------------
-\begin{frame}{Example 1}
+\begin{frame}{Example}
 \centering
 Reconstruction relative mean squared errors $\times 100\%$ versus multiplier of the
 orthogonalization regularizer $\lambda$.
@@ -535,7 +474,7 @@ and potential and solenoidal subfields, respectively.
 \input{assets/ribeiro/ribeiro-errors.tex}
 \end{frame}
 
-\begin{frame}{Ex 1: reconstruction of total field}
+\begin{frame}{Reconstruction of total field}
 \centering
 \vspace{0.5cm}
 \includegraphics[scale=0.45]{ribeiro/recon-total-first-best}
@@ -553,7 +492,7 @@ and potential and solenoidal subfields, respectively.
 \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Ex 1: reconstruction of potential subfield}
+\begin{frame}{Reconstruction of potential subfield}
 \centering
 \vspace{0.5cm}
 \includegraphics[scale=0.45]{ribeiro/recon-pot-first-best}
@@ -571,7 +510,7 @@ and potential and solenoidal subfields, respectively.
 \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Ex 1: reconstruction of solenoidal subfield}
+\begin{frame}{Reconstruction of solenoidal subfield}
 \centering
 \vspace{0.5cm}
 \includegraphics[scale=0.45]{ribeiro/recon-sol-first-best}
@@ -589,125 +528,127 @@ and potential and solenoidal subfields, respectively.
 \end{tikzpicture}
 \end{frame}
 
-% ------------------------------------------------------------------------------
-\section{Example 2: Orthogonal decomposition without vanishing normal
-solenoidal subfield on~the~boundary}
+% % ------------------------------------------------------------------------------
+% \section{Example 2: Orthogonal decomposition without vanishing normal
+% solenoidal subfield on~the~boundary}
 
-\begin{frame}{Ex 2: Data}
-Potential (curl-free) part given by the subfield:
-\[
-    \upot = \frac12 \left(
-        \begin{array}{r}
-        -2 \sin 2x \, \cos 3y \\
-        -3 \cos 2x \, \sin 3y
-    \end{array}
-    \right)
-\]
-The solenoidal (divergence-free) part is given by the Taylor--Green vortex at
-time zero:
-\[
-    \usol = \left(
-    \begin{array}{c}
-        \phantom{-} \cos x \, \sin y \\
-        -\sin x \, \cos y
-    \end{array}
-    \right)
-\]
+% \begin{frame}{Ex 2: Data}
+% Potential (curl-free) part given by the subfield:
+% \[
+%     \upot = \frac12 \left(
+%         \begin{array}{r}
+%         -2 \sin 2x \, \cos 3y \\
+%         -3 \cos 2x \, \sin 3y
+%     \end{array}
+%     \right)
+% \]
+% The solenoidal (divergence-free) part is given by the Taylor--Green vortex at
+% time zero:
+% \[
+%     \usol = \left(
+%     \begin{array}{c}
+%         \phantom{-} \cos x \, \sin y \\
+%         -\sin x \, \cos y
+%     \end{array}
+%     \right)
+% \]
 
-Measurements are sampled randomly with random seed 10. Number of measurements
-is 200. The domain is $[0; 2 \pi]^2$.
-\end{frame}
+% Measurements are sampled randomly with random seed 10. Number of measurements
+% is 200. The domain is $[0; 2 \pi]^2$.
+% \end{frame}
 
-\begin{frame}{Ex 2: Orthogonality}
-By analytical computation, one can see that the subfields are orthogonal
-in $L^{2}$-sense:
-\[
-    \int_D \upot \cdot \usol \, d\vec x = 0.
-\]
+% \begin{frame}{Ex 2: Orthogonality}
+% By analytical computation, one can see that the subfields are orthogonal
+% in $L^{2}$-sense:
+% \[
+%     \int_D \upot \cdot \usol \, d\vec x = 0.
+% \]
 
-\vspace{1cm}
-However, the normal component of the solenoidal part of the field does not
-vanish on the boundary.
-For example,
-\[
-  \usol \cdot \vec n = \sin x \text{ on } [0, 2\pi] \times \{y=0\}
-\]
-\end{frame}
+% \vspace{1cm}
+% However, the normal component of the solenoidal part of the field does not
+% vanish on the boundary.
+% For example,
+% \[
+%   \usol \cdot \vec n = \sin x \text{ on } [0, 2\pi] \times \{y=0\}
+% \]
+% \end{frame}
 
-\begin{frame}{Ex 2: Reconstruction errors}
-Reconstruction relative mean squared errors $\times 100\%$ versus multiplier of the
-orthogonalization regularizer $\lambda$.
-Errors $e_{\text{tot}}$, $e_{\text{pot}}$, $e_{\text{sol}}$ are for total field
-and potential and solenoidal subfields, respectively.
+% \begin{frame}{Ex 2: Reconstruction errors}
+% Reconstruction relative mean squared errors $\times 100\%$ versus multiplier of the
+% orthogonalization regularizer $\lambda$.
+% Errors $e_{\text{tot}}$, $e_{\text{pot}}$, $e_{\text{sol}}$ are for total field
+% and potential and solenoidal subfields, respectively.
 
-\centering
-\input{assets/periodic/periodic-errors.tex}
-\end{frame}
+% \centering
+% \input{assets/periodic/periodic-errors.tex}
+% \end{frame}
 
 
-\begin{frame}{Ex 2: reconstruction of total field}
-\centering
-\vspace{0.5cm}
-\includegraphics[scale=0.45]{periodic/recon-total-first-best}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
-\node (txt) at (0, 0) {True};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0$};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0.1$};
-\end{tikzpicture}
-\end{frame}
+% \begin{frame}{Ex 2: reconstruction of total field}
+% \centering
+% \vspace{0.5cm}
+% \includegraphics[scale=0.45]{periodic/recon-total-first-best}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+% \node (txt) at (0, 0) {True};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0$};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0.1$};
+% \end{tikzpicture}
+% \end{frame}
 
-\begin{frame}{Ex 2: reconstruction of potential subfield}
-\centering
-\vspace{0.5cm}
-\includegraphics[scale=0.45]{periodic/recon-pot-first-best}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
-\node (txt) at (0, 0) {True};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0$};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0.1$};
-\end{tikzpicture}
-\end{frame}
+% \begin{frame}{Ex 2: reconstruction of potential subfield}
+% \centering
+% \vspace{0.5cm}
+% \includegraphics[scale=0.45]{periodic/recon-pot-first-best}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+% \node (txt) at (0, 0) {True};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0$};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0.1$};
+% \end{tikzpicture}
+% \end{frame}
 
-\begin{frame}{Ex 2: reconstruction of solenoidal subfield}
-\centering
-\vspace{0.5cm}
-\includegraphics[scale=0.45]{periodic/recon-sol-first-best}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
-\node (txt) at (0, 0) {True};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0$};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0.1$};
-\end{tikzpicture}
-\end{frame}
+% \begin{frame}{Ex 2: reconstruction of solenoidal subfield}
+% \centering
+% \vspace{0.5cm}
+% \includegraphics[scale=0.45]{periodic/recon-sol-first-best}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+% \node (txt) at (0, 0) {True};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0$};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0.1$};
+% \end{tikzpicture}
+% \end{frame}
 
 \begin{frame}{Conclusions}
 \begin{itemize}
     \item Physics-informed neural networks can be used to learn Helmholtz--Hodge
         decomposition of a vector field from finite set of measurements
-    \item For fields with vanishing normal component of the solenoidal subfield,
+    \item As the learning problem is ill-posed, one has to make additional
+        assumptions about the field
+    \item For a field with vanishing normal component of the solenoidal subfield,
         additional information on orthogonality of the fields improves
         reconstruction errors two order of magnitudes
-    \item For fields with orthogonal components but without uniqueness,
-        errors decreases one order of magnitude (however, errors is 50\%)
+    % \item For fields with orthogonal components but without uniqueness,
+    %     errors decreases one order of magnitude (however, errors is 50\%)
 \end{itemize}
 \end{frame}
 
