@@ -115,10 +115,10 @@
 % ------------------------------------------------------------------------------
 
 \title{Physics-informed neural networks for discrete Helmholtz--Hodge decomposition}
-\author{Dmitry I.\ Kabanov (RWTH)\\
+\author{Dmitry I.\ Kabanov (formerly at RWTH)\\
   Joint work with Luis Espath (U Nottingham), Ra\'ul Tempone (RWTH, KAUST)}
 \institute{}
-\date{UQ hybrid seminar, 1 March 2022}
+\date{WIAS Berlin, 12 May 2022}
 \def\titlepage{%
   \usebeamertemplate{title page}%<---
 }
@@ -131,6 +131,25 @@
 \begin{frame}
 \titlepage
 \end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Biography sketch}
+\begin{itemize}
+    \item 2004–2010: Moscow Engineering-Physics Institute, BSc. + MSc.
+    \item 2010—2012: Software developer, Moscow
+    \item 2012—2018: King Abdullah University of Science and Technology,
+          Saudi Arabia \\
+          PhD thesis ``Numerical computation of detonation stability''
+          (analysis of stability of traveling-wave solutions of reactive
+          Euler equations for compressible fluids via numerical simulation
+          and postprocessing)
+    \item 2018—2019: Software developer in One Omega Seismics, Saudi Arabia
+    \item 2019—March 2022: Postdoc in RWTH Aachen University, Germany\\
+          Projects on physics-informed neural networks
+\end{itemize}
+\end{frame}
+
+\section{Helmholtz--Hodge decomposition}
 
 % ------------------------------------------------------------------------------
 \begin{frame}{Introduction}
@@ -329,7 +348,7 @@ where
     \int_{D} \norm{\partial^{3}\phi(\xx)}^{2} + \norm{\partial^{3}\vec \psi(\xx)}^{2} \, \dd \xx
 \end{align*}
 
-Regularizers are discretized on uniform grid $32\times32$.
+Integral in regularizers are discretized on a uniform grid.
 
 Hyperparameters $\lambda$ and $\mu$ should be set before the training.
 We use $\mu=1e-2$ in all experiments but we vary $\lambda$ to study its effect
@@ -359,14 +378,10 @@ and $\psi$.
 
 % ------------------------------------------------------------------------------
 \begin{frame}
-\frametitle{Feed-forward neural networks}
+\frametitle{Multilayer perceptron neural networks}
 
 As estimating functions $\phi$ and $\psi$ we use two
-fully-connected neural networks (multilayer perceptrons).
-
-NN with \(L\) hidden layers is a mapping from
-\(\R^{2}\) to \(\R\)
-of the following compositional structure:
+multilayer perceptrons networks that map \(\R^{2}\) to \(\R\):
 \[
     \phi(\xx; \VTheta) = A \circ F_{L} \circ \dots \circ F_1(\xx)
 \]
@@ -374,31 +389,38 @@ where
 \begin{itemize}
     \item \(A\) is linear operator, which is also called \textbf{output layer}
     \item \(F_j : \R^{n_{j-1}} \to \R^{n_j} \) nonlinear continuous
-    functions, with \(n_0 = 2\), which are called \textbf{hidden layers}
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Neural networks - hidden layers}
-
-We specialize hidden layers $F_{j}$ of a neural network
-\[
-    \phi(\xx; \VTheta) = A \circ F_{L} \circ \dots \circ F_1(\xx)
-\]
-to pairs "nonlinearity + affine map":
-\[
-    F_j(z_{j}) = \sigma(W_j \, z_{j-1} + b_j)
-\]
-where
-\begin{itemize}
+    functions, with \(n_0 = 2\), which are called \textbf{hidden layers},
+    of type $\tanh(W_j \, z_{j-1} + b_j)$, where $\tanh$ is applied
+    componentwise
     \item \(W_j \in \R^{n_{j-1}} \times \R^{n_j}\) are \textbf{weights} matrices
     \item \(b_j \in \R^{n_j}\) are \textbf{bias} vectors
-    \item nonlinear function \(\sigma\) is applied componentwise
+    \item nonlinear function \(\tanh\) is applied componentwise
 \end{itemize}
-
 Parameter vector $\VTheta$ is a concatenation of $A$, $W_{j}$ and $b_{j}$ for
 $j = 1, \dots, L$.
-
 \end{frame}
+
+% \begin{frame}{Neural networks - hidden layers}
+
+% We specialize hidden layers $F_{j}$ of a neural network
+% \[
+%     \phi(\xx; \VTheta) = A \circ F_{L} \circ \dots \circ F_1(\xx)
+% \]
+% to pairs "nonlinearity + affine map":
+% \[
+%     F_j(z_{j}) = \sigma(W_j \, z_{j-1} + b_j)
+% \]
+% where
+% \begin{itemize}
+%     \item \(W_j \in \R^{n_{j-1}} \times \R^{n_j}\) are \textbf{weights} matrices
+%     \item \(b_j \in \R^{n_j}\) are \textbf{bias} vectors
+%     \item nonlinear function \(\sigma\) is applied componentwise
+% \end{itemize}
+
+% Parameter vector $\VTheta$ is a concatenation of $A$, $W_{j}$ and $b_{j}$ for
+% $j = 1, \dots, L$.
+
+% \end{frame}
 
 \begin{frame}
 \frametitle{Visualization of multilayer perceptron $\R^2 \to \R$ with one hidden layer}
@@ -495,10 +517,10 @@ Measurements are either from total vector field
 or from potential or solenoidal subfields.
 \end{frame}
 
-\section{Example 1: Orthogonal decomposition of~a~field with~vanishing normal solenoidal subfield on~the~boundary}
+\section{Example: Orthogonal decomposition of~a~field with~vanishing normal solenoidal subfield on~the~boundary}
 
 % ------------------------------------------------------------------------------
-\begin{frame}{Ex 1: Data}
+\begin{frame}{Data}
 We consider a vector field given by the following potential
 functions:
 \begin{align}
@@ -514,7 +536,7 @@ Training data are given by uniform grid $51 \times 51$, validation data
 by grid $16 \times 16$, test data by grid $101 \times 101$.
 \end{frame}
 
-\begin{frame}{Example 1}
+\begin{frame}{Example}
 We use a neural network with one hidden layer with 64 hidden neurons.
 We train it using \num{100000} epochs.
 
@@ -524,7 +546,7 @@ $\lambda \in \{  10^{-8}, 10^{-3}, 10^{-2}, 10^{-1}, 1, 10 \}$.
 \end{frame}
 
 % ------------------------------------------------------------------------------
-\begin{frame}{Example 1}
+\begin{frame}{Example}
 \centering
 Reconstruction relative mean squared errors $\times 100\%$ versus multiplier of the
 orthogonalization regularizer $\lambda$.
@@ -535,7 +557,7 @@ and potential and solenoidal subfields, respectively.
 \input{assets/ribeiro/ribeiro-errors.tex}
 \end{frame}
 
-\begin{frame}{Ex 1: reconstruction of total field}
+\begin{frame}{Reconstruction of total field}
 \centering
 \vspace{0.5cm}
 \includegraphics[scale=0.45]{ribeiro/recon-total-first-best}
@@ -553,7 +575,7 @@ and potential and solenoidal subfields, respectively.
 \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Ex 1: reconstruction of potential subfield}
+\begin{frame}{Reconstruction of potential subfield}
 \centering
 \vspace{0.5cm}
 \includegraphics[scale=0.45]{ribeiro/recon-pot-first-best}
@@ -571,7 +593,7 @@ and potential and solenoidal subfields, respectively.
 \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Ex 1: reconstruction of solenoidal subfield}
+\begin{frame}{Reconstruction of solenoidal subfield}
 \centering
 \vspace{0.5cm}
 \includegraphics[scale=0.45]{ribeiro/recon-sol-first-best}
@@ -589,125 +611,175 @@ and potential and solenoidal subfields, respectively.
 \end{tikzpicture}
 \end{frame}
 
-% ------------------------------------------------------------------------------
-\section{Example 2: Orthogonal decomposition without vanishing normal
-solenoidal subfield on~the~boundary}
+% % ------------------------------------------------------------------------------
+% \section{Example 2: Orthogonal decomposition without vanishing normal
+% solenoidal subfield on~the~boundary}
 
-\begin{frame}{Ex 2: Data}
-Potential (curl-free) part given by the subfield:
-\[
-    \upot = \frac12 \left(
-        \begin{array}{r}
-        -2 \sin 2x \, \cos 3y \\
-        -3 \cos 2x \, \sin 3y
-    \end{array}
-    \right)
-\]
-The solenoidal (divergence-free) part is given by the Taylor--Green vortex at
-time zero:
-\[
-    \usol = \left(
-    \begin{array}{c}
-        \phantom{-} \cos x \, \sin y \\
-        -\sin x \, \cos y
-    \end{array}
-    \right)
-\]
+% \begin{frame}{Ex 2: Data}
+% Potential (curl-free) part given by the subfield:
+% \[
+%     \upot = \frac12 \left(
+%         \begin{array}{r}
+%         -2 \sin 2x \, \cos 3y \\
+%         -3 \cos 2x \, \sin 3y
+%     \end{array}
+%     \right)
+% \]
+% The solenoidal (divergence-free) part is given by the Taylor--Green vortex at
+% time zero:
+% \[
+%     \usol = \left(
+%     \begin{array}{c}
+%         \phantom{-} \cos x \, \sin y \\
+%         -\sin x \, \cos y
+%     \end{array}
+%     \right)
+% \]
 
-Measurements are sampled randomly with random seed 10. Number of measurements
-is 200. The domain is $[0; 2 \pi]^2$.
-\end{frame}
+% Measurements are sampled randomly with random seed 10. Number of measurements
+% is 200. The domain is $[0; 2 \pi]^2$.
+% \end{frame}
 
-\begin{frame}{Ex 2: Orthogonality}
-By analytical computation, one can see that the subfields are orthogonal
-in $L^{2}$-sense:
-\[
-    \int_D \upot \cdot \usol \, d\vec x = 0.
-\]
+% \begin{frame}{Ex 2: Orthogonality}
+% By analytical computation, one can see that the subfields are orthogonal
+% in $L^{2}$-sense:
+% \[
+%     \int_D \upot \cdot \usol \, d\vec x = 0.
+% \]
 
-\vspace{1cm}
-However, the normal component of the solenoidal part of the field does not
-vanish on the boundary.
-For example,
-\[
-  \usol \cdot \vec n = \sin x \text{ on } [0, 2\pi] \times \{y=0\}
-\]
-\end{frame}
+% \vspace{1cm}
+% However, the normal component of the solenoidal part of the field does not
+% vanish on the boundary.
+% For example,
+% \[
+%   \usol \cdot \vec n = \sin x \text{ on } [0, 2\pi] \times \{y=0\}
+% \]
+% \end{frame}
 
-\begin{frame}{Ex 2: Reconstruction errors}
-Reconstruction relative mean squared errors $\times 100\%$ versus multiplier of the
-orthogonalization regularizer $\lambda$.
-Errors $e_{\text{tot}}$, $e_{\text{pot}}$, $e_{\text{sol}}$ are for total field
-and potential and solenoidal subfields, respectively.
+% \begin{frame}{Ex 2: Reconstruction errors}
+% Reconstruction relative mean squared errors $\times 100\%$ versus multiplier of the
+% orthogonalization regularizer $\lambda$.
+% Errors $e_{\text{tot}}$, $e_{\text{pot}}$, $e_{\text{sol}}$ are for total field
+% and potential and solenoidal subfields, respectively.
 
-\centering
-\input{assets/periodic/periodic-errors.tex}
-\end{frame}
+% \centering
+% \input{assets/periodic/periodic-errors.tex}
+% \end{frame}
 
 
-\begin{frame}{Ex 2: reconstruction of total field}
-\centering
-\vspace{0.5cm}
-\includegraphics[scale=0.45]{periodic/recon-total-first-best}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
-\node (txt) at (0, 0) {True};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0$};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0.1$};
-\end{tikzpicture}
-\end{frame}
+% \begin{frame}{Ex 2: reconstruction of total field}
+% \centering
+% \vspace{0.5cm}
+% \includegraphics[scale=0.45]{periodic/recon-total-first-best}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+% \node (txt) at (0, 0) {True};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0$};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0.1$};
+% \end{tikzpicture}
+% \end{frame}
 
-\begin{frame}{Ex 2: reconstruction of potential subfield}
-\centering
-\vspace{0.5cm}
-\includegraphics[scale=0.45]{periodic/recon-pot-first-best}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
-\node (txt) at (0, 0) {True};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0$};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0.1$};
-\end{tikzpicture}
-\end{frame}
+% \begin{frame}{Ex 2: reconstruction of potential subfield}
+% \centering
+% \vspace{0.5cm}
+% \includegraphics[scale=0.45]{periodic/recon-pot-first-best}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+% \node (txt) at (0, 0) {True};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0$};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0.1$};
+% \end{tikzpicture}
+% \end{frame}
 
-\begin{frame}{Ex 2: reconstruction of solenoidal subfield}
-\centering
-\vspace{0.5cm}
-\includegraphics[scale=0.45]{periodic/recon-sol-first-best}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
-\node (txt) at (0, 0) {True};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0$};
-\end{tikzpicture}
-\begin{tikzpicture}[remember picture, overlay]
-\tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
-\node (txt) at (0, 0) {$\lambda = 0.1$};
-\end{tikzpicture}
-\end{frame}
+% \begin{frame}{Ex 2: reconstruction of solenoidal subfield}
+% \centering
+% \vspace{0.5cm}
+% \includegraphics[scale=0.45]{periodic/recon-sol-first-best}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=-4.3cm, yshift=2cm}
+% \node (txt) at (0, 0) {True};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=0cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0$};
+% \end{tikzpicture}
+% \begin{tikzpicture}[remember picture, overlay]
+% \tikzset{shift={(current page.center)}, xshift=4.5cm, yshift=2cm}
+% \node (txt) at (0, 0) {$\lambda = 0.1$};
+% \end{tikzpicture}
+% \end{frame}
 
 \begin{frame}{Conclusions}
 \begin{itemize}
     \item Physics-informed neural networks can be used to learn Helmholtz--Hodge
         decomposition of a vector field from finite set of measurements
-    \item For fields with vanishing normal component of the solenoidal subfield,
+    \item As the learning problem is ill-posed, one has to make additional
+        assumptions about the field
+    \item For a field with vanishing normal component of the solenoidal subfield,
         additional information on orthogonality of the fields improves
         reconstruction errors two order of magnitudes
-    \item For fields with orthogonal components but without uniqueness,
-        errors decreases one order of magnitude (however, errors is 50\%)
+    % \item For fields with orthogonal components but without uniqueness,
+    %     errors decreases one order of magnitude (however, errors is 50\%)
+\end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\section{Sketch of one of my PhD projects}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Sketch of one of my PhD projects}
+    \vspace{3em}
+    \begin{itemize}
+        \item Linearize the governing equations of fluid dynamics
+              around steady-state solutions
+        \item Solve equations using high-order numerical scheme:
+        Dormand--Prince Runge--Kutta 5(4) method in time and 5th order upwind
+        in space
+        \item Postprocess time series of solutions to extract stability spectra
+        using Dynamic Mode Decomposition
+    \end{itemize}
+    \end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Reactive Euler equations for compressible fluid with one reaction}
+\centering
+\includegraphics[scale=0.22]{eulereqns.png}
+\end{frame}
+
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Numerical methods used to solve equations}
+\centering
+\includegraphics[scale=0.22]{nummethod.png}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Examples of time series}
+\centering
+\includegraphics[scale=0.35]{time-series.png}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+\begin{frame}{Sketch of one of my PhD projects}
+\vspace{3em}
+\begin{itemize}
+    \item We developed a method of studying linear stability of detonation waves
+    \item The method is based on using highly-accurate numerical methods and
+            postprocessing using Dynamic Mode Decomposition
+    \item Comparison against alternative methods showed the viability
+            of the method
 \end{itemize}
 \end{frame}
 
